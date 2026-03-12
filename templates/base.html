@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Smart Campus{% endblock %} — Smart Campus Assistant</title>
+  <meta name="description" content="{% block meta_description %}AI-powered campus assistant for students{% endblock %}" />
+  {% block head_extra %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=2" />
+</head>
+<body>
+
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+
+    <a href="/" class="nav__logo" aria-label="Smart Campus home">
+      <div class="nav__logo-mark" aria-hidden="true">SC</div>
+      <span class="nav__wordmark">Smart Campus</span>
+    </a>
+
+    <div class="nav__center" role="list">
+      <a class="nav__link" href="/dashboard" role="listitem">Chat</a>
+      <a class="nav__link" href="/lecturer" role="listitem">Lecturer</a>
+      <a class="nav__link" href="/admin/create-lecturer" role="listitem">Admin</a>
+      <button class="nav__link" id="nav-profile-btn" role="listitem" aria-label="Open profile panel">Profile</button>
+      {% block nav_extra %}{% endblock %}
+    </div>
+
+    <div class="nav__right">
+
+      <button class="nav__icon-btn" id="theme-toggle" aria-label="Toggle colour theme">
+        <svg class="theme-icon theme-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-icon theme-icon--moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      <button
+        class="nav__avatar"
+        id="nav-avatar-btn"
+        aria-label="Open profile panel"
+        title="{{ current_user.email if current_user else '' }}"
+      >
+        {% if current_user %}{{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}{% else %}?{% endif %}
+      </button>
+
+    </div>
+  </nav>
+
+  <div class="panel-overlay" id="panel-overlay" aria-hidden="true"></div>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if current_user %}
+  <aside class="side-panel" id="profile-panel" aria-label="Profile panel" aria-hidden="true" role="dialog">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-subtle);">
+      <h2 class="panel-header__title" style="margin: 0; font-size: 1.2rem; font-weight: bold; color: var(--text-primary);">My Profile</h2>
+      <button class="panel-close-btn" aria-label="Close profile panel" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-body" style="padding: 24px;">
+      <div class="profile-hero" style="text-align: center; margin-bottom: 32px;">
+        <div class="profile-avatar-lg" aria-hidden="true" style="margin: 0 auto 16px; width: 72px; height: 72px; border-radius: 50%; background: var(--brand-dim); color: var(--brand-500); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold;">
+          {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
+        </div>
+        <div class="profile-name" style="font-size: 1.4rem; font-weight: bold; color: var(--text-primary);">
+          {{ current_user.first_name }} {{ current_user.last_name }}
+        </div>
+        <div class="profile-email" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">
+          {{ current_user.email }}
+        </div>
+      </div>
+
+      <div class="profile-section" style="margin-bottom: 32px;">
+        <p class="profile-section__label" style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px; letter-spacing: 0.05em;">My Courses</p>
+        
+        {% if current_user.courses %}
+          <div style="background: var(--bg-surface-2); border-radius: 12px; border: 1px solid var(--border-subtle); padding: 0 16px;">
+            {% for course in current_user.courses %}
+              <div style="padding: 16px 0; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">{{ course.course_name }}</span>
+                <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--brand-500);">Course ID: {{ course.course_id }}</span>
+              </div>
+            {% endfor %}
+            <div style="height: 1px; margin-top: -1px;"></div> </div>
+        {% else %}
+          <p style="font-size: 0.9rem; color: var(--text-secondary); text-align: center; padding: 20px; background: var(--bg-surface-2); border-radius: 12px;">Not registered to any courses.</p>
+        {% endif %}
+      </div>
+
+      <div class="profile-section">
+        <button class="profile-action-btn profile-action-btn--danger" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; border: none; background: var(--color-danger-dim); color: var(--color-danger); font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s;" onclick="window.location.href='/logout'" onmouseover="this.style.background='var(--color-danger)'; this.style.color='white';" onmouseout="this.style.background='var(--color-danger-dim)'; this.style.color='var(--color-danger)';">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </aside>
+  {% endif %}
+
+  {% block footer_extra %}{% endblock %}
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ── 1. Theme toggle ── */
+      const THEME_KEY = 'sca-theme';
+      const htmlEl    = document.documentElement;
+
+      function applyTheme(theme) {
+        htmlEl.setAttribute('data-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
+      }
+
+      // Apply saved or default theme immediately (before paint)
+      const saved = localStorage.getItem(THEME_KEY) || 'dark';
+      applyTheme(saved);
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', function () {
+            const current = htmlEl.getAttribute('data-theme');
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+          });
+        }
+
+        /* ── 2. Panel wiring ── */
+        const overlay      = document.getElementById('panel-overlay');
+        const profilePanel = document.getElementById('profile-panel');
+        const schedulePanel = document.getElementById('schedule-panel');
+
+        function openPanel(panel) {
+          closeAllPanels();
+          if (!panel) return;
+          panel.classList.add('is-open');
+          if (overlay) {
+            overlay.classList.add('is-visible');
+            overlay.removeAttribute('aria-hidden');
+          }
+          panel.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeAllPanels() {
+          [profilePanel, schedulePanel].forEach(function (p) {
+            if (p) {
+              p.classList.remove('is-open');
+              p.setAttribute('aria-hidden', 'true');
+            }
+          });
+          if (overlay) {
+            overlay.classList.remove('is-visible');
+            overlay.setAttribute('aria-hidden', 'true');
+          }
+        }
+
+        // Nav profile buttons
+        const navProfileBtn = document.getElementById('nav-profile-btn');
+        const navAvatarBtn  = document.getElementById('nav-avatar-btn');
+        const navScheduleBtn = document.getElementById('nav-schedule-btn');
+
+        if (navProfileBtn)  navProfileBtn.addEventListener('click',  function () { openPanel(profilePanel); });
+        if (navAvatarBtn)   navAvatarBtn.addEventListener('click',   function () { openPanel(profilePanel); });
+        if (navScheduleBtn) navScheduleBtn.addEventListener('click', function () { openPanel(schedulePanel); });
+
+        // Close on overlay click
+        if (overlay) overlay.addEventListener('click', closeAllPanels);
+
+        // Close on Escape
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closeAllPanels();
+        });
+
+        // Panel-internal close buttons
+        document.querySelectorAll('.panel-close-btn').forEach(function (btn) {
+          btn.addEventListener('click', closeAllPanels);
+        });
+
+        // Expose openPanel for use by other scripts
+        window.SCA = window.SCA || {};
+        window.SCA.openPanel    = openPanel;
+        window.SCA.closeAllPanels = closeAllPanels;
+        window.SCA.schedulePanel  = schedulePanel;
+        window.SCA.profilePanel   = profilePanel;
+      });
+
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+{% block title %}Lecturer Dashboard{% endblock %}
+
+{% block content %}
+<div class="lec-page">
+
+  <div class="lec-header">
+    <div class="lec-header__left">
+      <div class="lec-header__eyebrow">
+        <span class="lec-course-chip">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Course <span id="header-course-id">{{ current_user.lecturer_id }}</span>
+        </span>
+      </div>
+      <h1 class="lec-title">Lecturer Dashboard</h1>
+      <p class="lec-subtitle">{{ current_user.full_name }} · {{ current_user.department }}</p>
+    </div>
+    <div class="lec-save-status" id="lec-save-status">
+      <span class="lec-save-dot" id="lec-save-dot"></span>
+      <span id="lec-save-text">All changes saved</span>
+    </div>
+  </div>
+
+  <div class="lec-tabs" role="tablist">
+    <button class="lec-tab is-active" data-tab="lessons" role="tab" aria-selected="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Lessons
+    </button>
+    <button class="lec-tab" data-tab="exams" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Exams
+    </button>
+    <button class="lec-tab" data-tab="grades" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+      Grades
+    </button>
+    <button class="lec-tab" data-tab="students" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Students
+    </button>
+    <button class="lec-tab" data-tab="office-hours" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Office Hours
+    </button>
+  </div>
+
+  <div class="lec-panel is-active" id="tab-lessons">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Lessons</h2>
+        <p class="lec-panel__desc">course_id · date · hour · building_number · room_number</p>
+      </div>
+      <button class="lec-btn lec-btn--primary" id="add-lesson-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Lesson
+      </button>
+    </div>
+    <div class="lec-table-wrap">
+      <table class="lec-table">
+        <thead><tr><th>course_id</th><th>date</th><th>hour</th><th>building_number</th><th>room_number</th><th></th></tr></thead>
+        <tbody id="lessons-tbody"></tbody>
+      </table>
+      <div class="lec-empty" id="lessons-empty">
+        <div class="lec-empty__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <p>No lessons yet</p><span>Click <strong>Add Lesson</strong> to get started</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lec-panel" id="tab-exams">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Exams</h2>
+        <p class="lec-panel__desc">exam_id · course_id · exam_name · date · hour · building_number · room_number · weight_percentage · exam_attempt</p>
+      </div>
+      <button class="lec-btn lec-btn--primary" id="add-exam-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Exam
+      </button>
+    </div>
+    <div class="lec-table-wrap">
+      <table class="lec-table">
+        <thead><tr><th>ID</th><th>course_id</th><th>exam_name</th><th>date</th><th>hour</th><th>building</th><th>room</th><th>weight %</th><th>duration</th><th>attempt</th><th>final?</th><th>avg?</th><th></th></tr></thead>
+        <tbody id="exams-tbody"></tbody>
+      </table>
+      <div class="lec-empty" id="exams-empty">
+        <div class="lec-empty__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+        <p>No exams yet</p><span>Click <strong>Add Exam</strong> to get started</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lec-panel" id="tab-grades">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Grades</h2>
+        <p class="lec-panel__desc">student_id · exam_id · grade_received · status</p>
+      </div>
+      <button class="lec-btn lec-btn--primary" id="add-grade-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Grade
+      </button>
+    </div>
+    <div class="lec-table-wrap">
+      <table class="lec-table">
+        <thead><tr><th>student_name</th><th>exam_id</th><th>grade_received</th><th>status</th><th></th></tr></thead>
+        <tbody id="grades-tbody"></tbody>
+      </table>
+      <div class="lec-empty" id="grades-empty">
+        <div class="lec-empty__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <p>No grades yet</p><span>Click <strong>Add Grade</strong> to get started</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lec-panel" id="tab-students">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Student Access</h2>
+        <p class="lec-panel__desc">first_name · last_name · email · course_id</p>
+      </div>
+    </div>
+    <div class="lec-table-wrap">
+      <table class="lec-table">
+        <thead><tr><th>first_name</th><th>last_name</th><th>email</th><th>course_id</th></tr></thead>
+        <tbody id="students-tbody"></tbody>
+      </table>
+      <div class="lec-empty" id="students-empty">
+        <div class="lec-empty__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        <p>No students yet</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="lec-panel" id="tab-office-hours">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Office Hours</h2>
+        <p class="lec-panel__desc">date · hour · location</p>
+      </div>
+      <button class="lec-btn lec-btn--primary" id="add-oh-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Office Hour
+      </button>
+    </div>
+    <div class="lec-table-wrap">
+      <table class="lec-table">
+        <thead><tr><th>date</th><th>hour</th><th>location</th><th></th></tr></thead>
+        <tbody id="oh-tbody"></tbody>
+      </table>
+      <div class="lec-empty" id="oh-empty">
+        <div class="lec-empty__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <p>No office hours set</p><span>Click <strong>Add Office Hour</strong> to get started</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="lec-modal-backdrop" id="lec-modal-backdrop"></div>
+
+<div class="lec-modal" id="modal-lesson" role="dialog" aria-modal="true">
+  <div class="lec-modal__header">
+    <h3 class="lec-modal__title">Add Lesson</h3>
+    <button class="lec-modal__close" data-close-modal aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="lec-modal__body">
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">date</label><input class="lec-input" id="lesson-date" type="date" /></div>
+      <div class="lec-field"><label class="lec-label">hour</label><input class="lec-input" id="lesson-hour" type="time" step="300" min="08:00" max="20:00" /></div>
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">building_number</label><input class="lec-input" id="lesson-building" type="number" placeholder="3" /></div>
+      <div class="lec-field"><label class="lec-label">room_number</label><input class="lec-input" id="lesson-room" type="number" placeholder="301" /></div>
+    </div>
+    <div id="lesson-error" class="modal-error" style="display:none"></div>
+  </div>
+  <div class="lec-modal__footer">
+    <button class="lec-btn lec-btn--ghost" data-close-modal>Cancel</button>
+    <button class="lec-btn lec-btn--primary" id="save-lesson-btn">Save Lesson</button>
+  </div>
+</div>
+
+<div class="lec-modal" id="modal-exam" role="dialog" aria-modal="true">
+  <div class="lec-modal__header">
+    <h3 class="lec-modal__title">Add Exam</h3>
+    <button class="lec-modal__close" data-close-modal aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="lec-modal__body">
+    <div class="lec-field"><label class="lec-label">exam_name</label><input class="lec-input" id="exam-name" type="text" placeholder="Midterm Exam" /></div>
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">date</label><input class="lec-input" id="exam-date" type="date" /></div>
+      <div class="lec-field"><label class="lec-label">hour</label><input class="lec-input" id="exam-hour" type="time" step="300" min="08:00" max="22:00" /></div>
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">building_number</label><input class="lec-input" id="exam-building" type="number" placeholder="1" /></div>
+      <div class="lec-field"><label class="lec-label">room_number</label><input class="lec-input" id="exam-room" type="number" placeholder="101" /></div>
+      <div class="lec-field"><label class="lec-label">weight %</label><input class="lec-input" id="exam-weight" type="number" min="0" max="100" placeholder="40" /></div>
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">duration (min)</label><input class="lec-input" id="exam-duration" type="number" min="1" placeholder="120" /></div>
+      <div class="lec-field"><label class="lec-label">attempt</label><select class="lec-select" id="exam-attempt"><option value="A">A — First</option><option value="B">B — Retake</option></select></div>
+      <div class="lec-field"><label class="lec-label">final grade?</label><select class="lec-select" id="exam-is-final"><option value="1">Yes</option><option value="0">No</option></select></div>
+      <div class="lec-field"><label class="lec-label">in semester avg?</label><select class="lec-select" id="exam-in-avg"><option value="1">Yes</option><option value="0">No</option></select></div>
+    </div>
+    <div id="exam-error" class="modal-error" style="display:none"></div>
+  </div>
+  <div class="lec-modal__footer">
+    <button class="lec-btn lec-btn--ghost" data-close-modal>Cancel</button>
+    <button class="lec-btn lec-btn--primary" id="save-exam-btn">Save Exam</button>
+  </div>
+</div>
+
+<div class="lec-modal" id="modal-grade" role="dialog" aria-modal="true">
+  <div class="lec-modal__header">
+    <h3 class="lec-modal__title">Add Grade</h3>
+    <button class="lec-modal__close" data-close-modal aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="lec-modal__body">
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">student_name</label><input class="lec-input" id="grade-student-name" type="text" placeholder="Noam Freiman" list="students-datalist" autocomplete="off" /><datalist id="students-datalist"></datalist></div>
+      <div class="lec-field"><label class="lec-label">exam_id</label><input class="lec-input" id="grade-exam-id" type="number" placeholder="1" /></div>
+    </div>
+    <div class="lec-field"><label class="lec-label">grade_received</label><input class="lec-input" id="grade-received" type="number" min="0" max="100" placeholder="85" /></div>
+    <div id="grade-error" class="modal-error" style="display:none"></div>
+  </div>
+  <div class="lec-modal__footer">
+    <button class="lec-btn lec-btn--ghost" data-close-modal>Cancel</button>
+    <button class="lec-btn lec-btn--primary" id="save-grade-btn">Save Grade</button>
+  </div>
+</div>
+
+<div class="lec-modal" id="modal-oh" role="dialog" aria-modal="true">
+  <div class="lec-modal__header">
+    <h3 class="lec-modal__title">Add Office Hour</h3>
+    <button class="lec-modal__close" data-close-modal aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="lec-modal__body">
+    <div class="lec-field-row">
+      <div class="lec-field"><label class="lec-label">date</label><input class="lec-input" id="oh-date" type="date" /></div>
+      <div class="lec-field"><label class="lec-label">hour</label><input class="lec-input" id="oh-hour" type="time" step="300" min="08:00" max="20:00" /></div>
+    </div>
+    <div class="lec-field"><label class="lec-label">location</label><input class="lec-input" id="oh-location" type="text" placeholder="Building 3, Room 301 / Zoom Link" /></div>
+    <div id="oh-error" class="modal-error" style="display:none"></div>
+  </div>
+  <div class="lec-modal__footer">
+    <button class="lec-btn lec-btn--ghost" data-close-modal>Cancel</button>
+    <button class="lec-btn lec-btn--primary" id="save-oh-btn">Save Office Hour</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block footer_extra %}
+<style>
+.lec-page { max-width:1140px; margin:0 auto; padding:calc(var(--nav-height) + var(--sp-10)) var(--sp-6) var(--sp-12); min-height:100vh; }
+.lec-header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-7); flex-wrap:wrap; }
+.lec-header__eyebrow { margin-bottom:6px; }
+.lec-course-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:var(--brand-dim); color:var(--brand-500); border-radius:var(--r-full); font-family:var(--font-mono); font-size:0.7rem; font-weight:700; letter-spacing:0.04em; }
+.lec-title { font-family:var(--font-display); font-size:1.65rem; font-weight:700; color:var(--text-primary); line-height:1.15; }
+.lec-subtitle { font-family:var(--font-mono); font-size:0.78rem; color:var(--text-secondary); margin-top:4px; }
+.lec-save-status { display:flex; align-items:center; gap:7px; font-size:0.75rem; color:var(--text-tertiary); font-family:var(--font-mono); padding:6px 12px; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--r-full); white-space:nowrap; margin-top:6px; }
+.lec-save-dot { width:7px; height:7px; border-radius:var(--r-full); background:var(--color-success); flex-shrink:0; }
+.lec-save-dot.is-saving { background:var(--brand-500); animation:lec-pulse 0.8s ease-in-out infinite; }
+.lec-tabs { display:flex; gap:2px; margin-bottom:var(--sp-6); background:var(--bg-surface); border:1px solid var(--border-default); border-radius:var(--r-lg); padding:4px; width:fit-content; }
+.lec-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 20px; border-radius:var(--r-md); font-size:0.84rem; font-weight:500; color:var(--text-secondary); background:none; border:none; cursor:pointer; transition:color var(--t-fast),background-color var(--t-fast); white-space:nowrap; }
+.lec-tab:hover { color:var(--text-primary); background:var(--bg-surface-2); }
+.lec-tab.is-active { color:var(--brand-500); background:var(--brand-dim); font-weight:600; }
+.lec-panel { display:none; }
+.lec-panel.is-active { display:block; animation:lec-fadeUp 0.22s var(--ease-out) both; }
+.lec-panel__header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-4); flex-wrap:nowrap; }
+.lec-panel__header > .lec-btn { flex-shrink:0; align-self:flex-start; }
+.lec-panel__title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-primary); }
+.lec-panel__desc { font-size:0.72rem; color:var(--text-tertiary); font-family:var(--font-mono); margin-top:3px; }
+.lec-table-wrap { background:var(--bg-surface); border:1px solid var(--border-default); border-radius:var(--r-lg); overflow:hidden; overflow-x:auto; }
+.lec-table { width:100%; border-collapse:collapse; min-width:480px; }
+.lec-table thead th { padding:11px 16px; text-align:left; font-size:0.7rem; font-weight:700; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.08em; color:var(--text-tertiary); background:var(--bg-surface-2); border-bottom:1px solid var(--border-default); white-space:nowrap; }
+.lec-table tbody tr { border-bottom:1px solid var(--border-subtle); transition:background-color var(--t-fast); }
+.lec-table tbody tr:last-child { border-bottom:none; }
+.lec-table tbody tr:hover { background:var(--bg-surface-2); }
+.lec-table tbody td { padding:11px 16px; font-size:0.84rem; color:var(--text-primary); vertical-align:middle; font-family:var(--font-mono); }
+.lec-empty { display:flex; flex-direction:column; align-items:center; gap:var(--sp-3); padding:var(--sp-10) var(--sp-4) var(--sp-12); color:var(--text-tertiary); text-align:center; }
+.lec-empty.is-hidden { display:none; }
+.lec-empty__icon { width:52px; height:52px; border-radius:var(--r-lg); background:var(--bg-surface-2); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.lec-empty p { font-size:0.9rem; font-weight:600; color:var(--text-secondary); }
+.lec-empty span { font-size:0.8rem; }
+.lec-empty strong { color:var(--text-secondary); }
+.moed-badge { display:inline-flex; align-items:center; justify-content:center; padding:2px 8px; border-radius:var(--r-full); font-size:0.7rem; font-weight:700; font-family:var(--font-mono); }
+.moed-badge--a { background:var(--brand-dim); color:var(--brand-400); }
+.moed-badge--b { background:var(--color-violet-dim); color:var(--color-violet); }
+.grade-status { display:inline-flex; align-items:center; padding:3px 9px; border-radius:var(--r-full); font-size:0.72rem; font-weight:600; font-family:var(--font-mono); }
+.grade-status--pass { background:var(--color-success-dim); color:var(--color-success); }
+.grade-status--fail { background:var(--color-danger-dim); color:var(--color-danger); }
+.grade-status--pending { background:var(--bg-surface-3); color:var(--text-tertiary); }
+.lec-delete-btn { width:28px; height:28px; border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); background:none; border:none; cursor:pointer; opacity:0; transition:color var(--t-fast),background-color var(--t-fast),opacity var(--t-fast); }
+.lec-table tbody tr:hover .lec-delete-btn { opacity:1; }
+.lec-delete-btn:hover { color:var(--color-danger); background:var(--color-danger-dim); }
+.lec-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--r-md); font-size:0.84rem; font-weight:600; cursor:pointer; border:none; white-space:nowrap; transition:background-color var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast); }
+.lec-btn:hover { transform:translateY(-1px); }
+.lec-btn--primary { background:var(--brand-500); color:#fff; }
+.lec-btn--primary:hover { background:var(--brand-600); box-shadow:var(--shadow-brand); }
+.lec-btn--ghost { background:var(--bg-surface-2); color:var(--text-secondary); border:1px solid var(--border-default); }
+.lec-btn--ghost:hover { color:var(--text-primary); background:var(--bg-surface-3); }
+.lec-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.lec-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.2s ease; backdrop-filter:blur(3px); }
+.lec-modal-backdrop.is-visible { opacity:1; pointer-events:all; }
+.lec-modal { position:fixed; top:50%; left:50%; transform:translate(-50%,-46%); width:min(540px,calc(100vw - 32px)); background:var(--bg-surface); border:1px solid var(--border-default); border-radius:var(--r-xl); box-shadow:var(--shadow-xl); z-index:201; opacity:0; pointer-events:none; transition:opacity 0.2s ease,transform 0.2s var(--ease-out); }
+.lec-modal.is-visible { opacity:1; pointer-events:all; transform:translate(-50%,-50%); }
+.lec-modal__header { display:flex; align-items:center; justify-content:space-between; padding:var(--sp-5) var(--sp-5) var(--sp-4); border-bottom:1px solid var(--border-subtle); }
+.lec-modal__title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-primary); }
+.lec-modal__close { width:32px; height:32px; border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); background:none; border:none; cursor:pointer; transition:color var(--t-fast),background-color var(--t-fast); }
+.lec-modal__close:hover { color:var(--text-primary); background:var(--bg-surface-3); }
+.lec-modal__body { padding:var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-4); max-height:calc(100vh - 240px); overflow-y:auto; }
+.lec-modal__footer { display:flex; align-items:center; justify-content:flex-end; gap:var(--sp-3); padding:var(--sp-4) var(--sp-5); border-top:1px solid var(--border-subtle); }
+.lec-field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:0; }
+.lec-field-row { display:flex; flex-direction:row; gap:var(--sp-3); flex-wrap:wrap; }
+.lec-label { font-size:0.7rem; font-weight:700; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.07em; color:var(--text-tertiary); }
+.lec-input { width:100%; padding:9px 12px; background:var(--bg-surface-2); border:1.5px solid var(--border-default); border-radius:var(--r-md); color:var(--text-primary); font-family:var(--font-mono); font-size:0.875rem; outline:none; transition:border-color var(--t-fast),box-shadow var(--t-fast); box-sizing:border-box; }
+.lec-input:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px var(--brand-dim); }
+.lec-input::placeholder { color:var(--text-tertiary); }
+.lec-input.is-error { border-color:var(--color-danger); box-shadow:0 0 0 3px var(--color-danger-dim); }
+.lec-select { width:100%; padding:9px 12px; background:var(--bg-surface-2); border:1.5px solid var(--border-default); border-radius:var(--r-md); color:var(--text-primary); font-family:var(--font-mono); font-size:0.875rem; outline:none; cursor:pointer; transition:border-color var(--t-fast),box-shadow var(--t-fast); box-sizing:border-box; }
+.lec-select:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px var(--brand-dim); }
+.modal-error { color:var(--color-danger); font-size:0.8rem; padding:8px 12px; background:var(--color-danger-dim); border-radius:var(--r-md); }
+@keyframes lec-fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes lec-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@media (max-width:680px) {
+  .lec-page { padding:var(--sp-4) var(--sp-3) var(--sp-8); }
+  .lec-tabs { width:100%; overflow-x:auto; }
+  .lec-tab { padding:8px 14px; font-size:0.8rem; }
+  .lec-field-row { flex-direction:column; }
+  .lec-panel__header { flex-direction:column; align-items:flex-start; }
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  var studentsCache = [];
+
+  function setSaving(on) {
+    var dot  = document.getElementById('lec-save-dot');
+    var text = document.getElementById('lec-save-text');
+    if (on) { dot.classList.add('is-saving'); text.textContent = 'Saving…'; }
+    else    { dot.classList.remove('is-saving'); text.textContent = 'All changes saved'; }
+  }
+
+  function showError(id, msg) {
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError(id) {
+    var el = document.getElementById(id);
+    el.style.display = 'none';
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getVal(id) { return document.getElementById(id).value.trim(); }
+
+  function shake(el) {
+    el.classList.add('is-error');
+    el.focus();
+    setTimeout(function () { el.classList.remove('is-error'); }, 1200);
+  }
+
+  function deleteBtn(endpoint, id) {
+    return '<button class="lec-delete-btn" data-endpoint="' + esc(endpoint) + '" data-id="' + esc(id) + '" aria-label="Delete">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+      '</button>';
+  }
+
+  /* Tabs Navigation */
+  document.querySelectorAll('.lec-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.lec-tab').forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
+      document.querySelectorAll('.lec-panel').forEach(function (p) { p.classList.remove('is-active'); });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected','true');
+      document.getElementById('tab-' + tab.getAttribute('data-tab')).classList.add('is-active');
+    });
+  });
+
+  /* Modals */
+  var backdrop = document.getElementById('lec-modal-backdrop');
+  function openModal(id) { document.getElementById(id).classList.add('is-visible'); backdrop.classList.add('is-visible'); }
+  function closeAll() {
+    document.querySelectorAll('.lec-modal').forEach(function (m) { m.classList.remove('is-visible'); });
+    backdrop.classList.remove('is-visible');
+  }
+  backdrop.addEventListener('click', closeAll);
+  document.querySelectorAll('[data-close-modal]').forEach(function (b) { b.addEventListener('click', closeAll); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+
+  /* API Helpers */
+  function apiFetch(method, url, body, onSuccess, onError) {
+    setSaving(true);
+    var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    fetch(url, opts)
+      .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+      .then(function (res) {
+        setSaving(false);
+        if (!res.ok) { onError(res.data.error || 'Something went wrong.'); return; }
+        onSuccess(res.data);
+      })
+      .catch(function () { setSaving(false); onError('Network error.'); });
+  }
+
+  function apiDelete(url, onSuccess, onError) {
+    setSaving(true);
+    fetch(url, { method: 'DELETE' })
+      .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+      .then(function (res) {
+        setSaving(false);
+        if (!res.ok) { onError(res.data.error || 'Delete failed.'); return; }
+        onSuccess();
+      })
+      .catch(function () { setSaving(false); onError('Network error.'); });
+  }
+
+  /* Lessons */
+  function renderLessons(rows) {
+    var tbody = document.getElementById('lessons-tbody');
+    var empty = document.getElementById('lessons-empty');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(r.course_id) + '</td>' +
+        '<td>' + esc(r.date) + '</td>' +
+        '<td>' + esc(r.hour) + '</td>' +
+        '<td>' + esc(r.building_number) + '</td>' +
+        '<td>' + esc(r.room_number) + '</td>' +
+        '<td>' + deleteBtn('lessons', r.lesson_id) + '</td>';
+      tbody.appendChild(tr);
+    });
+    attachDeleteHandlers();
+  }
+
+  function loadLessons() {
+    fetch('/api/lessons').then(function (r) { return r.json(); }).then(renderLessons).catch(function () {});
+  }
+
+  document.getElementById('add-lesson-btn').addEventListener('click', function () {
+    ['lesson-date','lesson-hour','lesson-building','lesson-room'].forEach(function (id) { document.getElementById(id).value = ''; });
+    hideError('lesson-error');
+    openModal('modal-lesson');
+  });
+
+  document.getElementById('save-lesson-btn').addEventListener('click', function () {
+    var dateEl = document.getElementById('lesson-date');
+    if (!dateEl.value) { shake(dateEl); return; }
+    hideError('lesson-error');
+    apiFetch('POST', '/api/lessons', {
+      date:            getVal('lesson-date'),
+      hour:            getVal('lesson-hour'),
+      building_number: parseInt(getVal('lesson-building')),
+      room_number:     parseInt(getVal('lesson-room'))
+    }, function () { loadLessons(); closeAll(); },
+       function (err) { showError('lesson-error', err); });
+  });
+
+  /* Exams */
+  function renderExams(rows) {
+    var tbody = document.getElementById('exams-tbody');
+    var empty = document.getElementById('exams-empty');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    rows.forEach(function (r) {
+      var badge = r.exam_attempt === 'A'
+        ? '<span class="moed-badge moed-badge--a">A</span>'
+        : '<span class="moed-badge moed-badge--b">B</span>';
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td style="font-weight:bold; color:var(--brand-500)">' + esc(r.exam_id) + '</td>' +
+        '<td>' + esc(r.course_id) + '</td>' +
+        '<td>' + esc(r.exam_name) + '</td>' +
+        '<td>' + esc(r.date) + '</td>' +
+        '<td>' + esc(r.hour) + '</td>' +
+        '<td>' + esc(r.building_number) + '</td>' +
+        '<td>' + esc(r.room_number) + '</td>' +
+        '<td>' + esc(r.weight_percentage) + '%</td>' +
+        '<td>' + esc(r.exam_duration) + ' min</td>' +
+        '<td>' + badge + '</td>' +
+        '<td>' + (r.is_final_grade_component ? '✓' : '—') + '</td>' +
+        '<td>' + (r.include_in_semester_avg  ? '✓' : '—') + '</td>' +
+        '<td>' + deleteBtn('exams', r.exam_id) + '</td>';
+      tbody.appendChild(tr);
+    });
+    attachDeleteHandlers();
+  }
+
+  function loadExams() {
+    fetch('/api/exams').then(function (r) { return r.json(); }).then(renderExams).catch(function () {});
+  }
+
+  document.getElementById('add-exam-btn').addEventListener('click', function () {
+    ['exam-name','exam-date','exam-hour','exam-building','exam-room','exam-weight','exam-duration'].forEach(function (id) { document.getElementById(id).value = ''; });
+    hideError('exam-error');
+    openModal('modal-exam');
+  });
+
+  document.getElementById('save-exam-btn').addEventListener('click', function () {
+    var nameEl = document.getElementById('exam-name');
+    if (!nameEl.value.trim()) { shake(nameEl); return; }
+    hideError('exam-error');
+    apiFetch('POST', '/api/exams', {
+      exam_name:                nameEl.value.trim(),
+      date:                     getVal('exam-date'),
+      hour:                     getVal('exam-hour'),
+      building_number:          parseInt(getVal('exam-building')),
+      room_number:              parseInt(getVal('exam-room')),
+      weight_percentage:        parseFloat(getVal('exam-weight')),
+      exam_duration:            parseInt(getVal('exam-duration')),
+      exam_attempt:             getVal('exam-attempt'),
+      is_final_grade_component: parseInt(getVal('exam-is-final')),
+      include_in_semester_avg:  parseInt(getVal('exam-in-avg'))
+    }, function () { loadExams(); closeAll(); },
+       function (err) { showError('exam-error', err); });
+  });
+
+  /* Grades */
+  function gradeStatus(g) {
+    if (g === null || g === undefined || g === '')
+      return '<span class="grade-status grade-status--pending">Pending</span>';
+    return parseInt(g) >= 56
+      ? '<span class="grade-status grade-status--pass">Pass</span>'
+      : '<span class="grade-status grade-status--fail">Fail</span>';
+  }
+
+  function renderGrades(rows) {
+    var tbody = document.getElementById('grades-tbody');
+    var empty = document.getElementById('grades-empty');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(r.student_name) + '</td>' +
+        '<td>' + esc(r.exam_id) + '</td>' +
+        '<td>' + esc(r.grade_received) + '</td>' +
+        '<td>' + gradeStatus(r.grade_received) + '</td>' +
+        '<td>' + deleteBtn('grades', r.grade_id) + '</td>';
+      tbody.appendChild(tr);
+    });
+    attachDeleteHandlers();
+  }
+
+  function loadGrades() {
+    fetch('/api/grades').then(function (r) { return r.json(); }).then(renderGrades).catch(function () {});
+  }
+
+  document.getElementById('add-grade-btn').addEventListener('click', function () {
+    ['grade-student-name','grade-exam-id','grade-received'].forEach(function (id) { document.getElementById(id).value = ''; });
+    var dl = document.getElementById('students-datalist');
+    dl.innerHTML = '';
+    studentsCache.forEach(function (s) {
+      var opt = document.createElement('option');
+      opt.value = s.first_name + ' ' + s.last_name;
+      opt.setAttribute('data-id', s.student_id);
+      dl.appendChild(opt);
+    });
+    hideError('grade-error');
+    openModal('modal-grade');
+  });
+
+  document.getElementById('save-grade-btn').addEventListener('click', function () {
+    var nameEl = document.getElementById('grade-student-name');
+    if (!nameEl.value.trim()) { shake(nameEl); return; }
+    var studentId = null;
+    studentsCache.forEach(function (s) {
+      if ((s.first_name + ' ' + s.last_name).trim() === nameEl.value.trim()) studentId = s.student_id;
+    });
+    if (!studentId) { shake(nameEl); showError('grade-error', 'Student not found.'); return; }
+    hideError('grade-error');
+    apiFetch('POST', '/api/grades', {
+      student_id:     studentId,
+      exam_id:        parseInt(getVal('grade-exam-id')),
+      grade_received: parseInt(getVal('grade-received'))
+    }, function () { loadGrades(); closeAll(); },
+       function (err) { showError('grade-error', err); });
+  });
+
+  /* Students (View Only) */
+  function renderStudents(rows) {
+    studentsCache = rows;
+    var tbody = document.getElementById('students-tbody');
+    var empty = document.getElementById('students-empty');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(r.first_name) + '</td>' +
+        '<td>' + esc(r.last_name) + '</td>' +
+        '<td>' + esc(r.email) + '</td>' +
+        '<td>' + esc(r.course_id) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadStudents() {
+    fetch('/api/students').then(function (r) { return r.json(); }).then(renderStudents).catch(function () {});
+  }
+
+  /* Office Hours */
+  function renderOfficeHours(rows) {
+    var tbody = document.getElementById('oh-tbody');
+    var empty = document.getElementById('oh-empty');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(r.date) + '</td>' +
+        '<td>' + esc(r.hour) + '</td>' +
+        '<td>' + esc(r.location) + '</td>' +
+        '<td>' + deleteBtn('office_hours', r.office_hour_id) + '</td>';
+      tbody.appendChild(tr);
+    });
+    attachDeleteHandlers();
+  }
+
+  function loadOfficeHours() {
+    fetch('/api/office_hours').then(function (r) { return r.json(); }).then(renderOfficeHours).catch(function () {});
+  }
+
+  document.getElementById('add-oh-btn').addEventListener('click', function () {
+    ['oh-date','oh-hour','oh-location'].forEach(function (id) { document.getElementById(id).value = ''; });
+    hideError('oh-error');
+    openModal('modal-oh');
+  });
+
+  document.getElementById('save-oh-btn').addEventListener('click', function () {
+    var dateEl = document.getElementById('oh-date');
+    if (!dateEl.value) { shake(dateEl); return; }
+    hideError('oh-error');
+    apiFetch('POST', '/api/office_hours', {
+      date:     getVal('oh-date'),
+      hour:     getVal('oh-hour'),
+      location: getVal('oh-location')
+    }, function () { loadOfficeHours(); closeAll(); },
+       function (err) { showError('oh-error', err); });
+  });
+
+  /* Delete Handlers */
+  function attachDeleteHandlers() {
+    document.querySelectorAll('[data-endpoint]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var endpoint = this.getAttribute('data-endpoint');
+        var id       = this.getAttribute('data-id');
+        apiDelete('/api/' + endpoint + '/' + id,
+          function () {
+            if (endpoint === 'lessons') loadLessons();
+            else if (endpoint === 'exams') loadExams();
+            else if (endpoint === 'grades') loadGrades();
+            else if (endpoint === 'office_hours') loadOfficeHours();
+          },
+          function (err) { alert(err); }
+        );
+      });
+    });
+  }
+
+  /* Init */
+  loadLessons();
+  loadExams();
+  loadGrades();
+  loadStudents();
+  loadOfficeHours();
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — Smart Campus</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=2" />
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-base); padding: var(--sp-4); }
+
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-2xl);
+      padding: var(--sp-8) var(--sp-8);
+      width: min(420px, 100%);
+      box-shadow: var(--shadow-xl);
+      animation: fadeUp 0.4s var(--ease-out) both;
+    }
+
+    .auth-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; color: var(--text-tertiary);
+      text-decoration: none; margin-bottom: var(--sp-5);
+      transition: color var(--t-fast);
+    }
+    .auth-back:hover { color: var(--text-primary); text-decoration: none; }
+
+    .auth-logo {
+      width: 44px; height: 44px;
+      border-radius: var(--r-lg);
+      background: linear-gradient(135deg, var(--brand-500), var(--color-violet));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #fff;
+      margin-bottom: var(--sp-4);
+    }
+
+    .auth-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-1); }
+    .auth-sub   { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--sp-6); }
+
+    .auth-form  { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+    .auth-field { display: flex; flex-direction: column; gap: 6px; }
+
+    .auth-label {
+      font-size: 0.75rem; font-weight: 700;
+      font-family: var(--font-mono); text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-tertiary);
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg-surface-2);
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--r-md);
+      color: var(--text-primary);
+      font-family: var(--font-body); font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+    .auth-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--brand-dim); }
+    .auth-input::placeholder { color: var(--text-tertiary); }
+    .auth-input.is-error { border-color: var(--color-danger); box-shadow: 0 0 0 3px var(--color-danger-dim); }
+
+    .auth-error {
+      display: none;
+      align-items: center; gap: 6px;
+      padding: 10px 14px;
+      background: var(--color-danger-dim);
+      border: 1px solid var(--color-danger);
+      border-radius: var(--r-md);
+      font-size: 0.82rem; color: var(--color-danger);
+    }
+    .auth-error.is-visible { display: flex; }
+
+
+
+    .auth-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--brand-500); color: #fff;
+      border: none; border-radius: var(--r-lg);
+      font-size: 0.95rem; font-weight: 700;
+      cursor: pointer;
+      margin-top: var(--sp-2);
+      transition: background-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+    }
+    .auth-submit:hover { background: var(--brand-600); transform: translateY(-1px); box-shadow: var(--shadow-brand); }
+    .auth-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .auth-footer { text-align: center; margin-top: var(--sp-5); font-size: 0.83rem; color: var(--text-secondary); }
+    .auth-footer a { color: var(--brand-400); font-weight: 600; }
+
+    .auth-theme-btn {
+      position: fixed; top: var(--sp-4); right: var(--sp-4);
+      width: 36px; height: 36px; border-radius: var(--r-full);
+      background: var(--bg-surface); border: 1px solid var(--border-default);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); cursor: pointer; overflow: hidden;
+      transition: color var(--t-fast), border-color var(--t-fast);
+    }
+    .auth-theme-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  </style>
+</head>
+<body>
+
+  <button class="auth-theme-btn" id="theme-toggle" aria-label="Toggle theme">
+    <div class="theme-toggle__inner">
+      <div class="theme-toggle__icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </div>
+      <div class="theme-toggle__icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </div>
+  </button>
+
+  <div class="auth-card">
+
+    <a href="/" class="auth-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to home
+    </a>
+
+    <div class="auth-logo">SC</div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Log in to your Smart Campus account</p>
+
+    <!-- Server error (Jinja2) -->
+    <div class="auth-error {% if error %}is-visible{% endif %}" id="server-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error | default('Incorrect email or password.') }}
+    </div>
+
+    <form class="auth-form" method="POST" action="/login" id="login-form" novalidate>
+
+      <div class="auth-field">
+        <label class="auth-label" for="email">Email</label>
+        <input class="auth-input" id="email" name="email" type="email"
+               placeholder="you@university.edu"
+               value="{{ form_email | default('') }}"
+               autocomplete="email" required />
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label" for="password">Password</label>
+        <input class="auth-input" id="password" name="password" type="password"
+               placeholder="••••••••"
+               autocomplete="current-password" required />
+      </div>
+
+      <button class="auth-submit" type="submit" id="submit-btn">Log In</button>
+
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account? <a href="/register">Create one</a>
+    </p>
+
+  </div>
+
+  <script>
+    (function() {
+      var THEME_KEY = 'sca-theme';
+      var html = document.documentElement;
+      html.setAttribute('data-theme', localStorage.getItem(THEME_KEY) || 'dark');
+      document.getElementById('theme-toggle').addEventListener('click', function() {
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem(THEME_KEY, next);
+      });
+
+      // Client-side empty check
+      document.getElementById('login-form').addEventListener('submit', function(e) {
+        var email = document.getElementById('email');
+        var pass  = document.getElementById('password');
+        var ok = true;
+        [email, pass].forEach(function(inp) {
+          if (!inp.value.trim()) { inp.classList.add('is-error'); ok = false; }
+          else inp.classList.remove('is-error');
+        });
+        if (!ok) e.preventDefault();
+      });
+    })();
+  </script>
+</body>
+</html>

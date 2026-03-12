@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — Smart Campus</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=2" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-base);
+      padding: var(--sp-6) var(--sp-4);
+    }
+
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-2xl);
+      padding: var(--sp-8);
+      width: min(480px, 100%);
+      box-shadow: var(--shadow-xl);
+      animation: fadeUp 0.4s var(--ease-out) both;
+    }
+
+    .auth-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      margin-bottom: var(--sp-5);
+      transition: color var(--t-fast);
+    }
+    .auth-back:hover { color: var(--text-primary); text-decoration: none; }
+
+    .auth-logo {
+      width: 44px; height: 44px;
+      border-radius: var(--r-lg);
+      background: linear-gradient(135deg, var(--brand-500), var(--color-violet));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #fff;
+      margin-bottom: var(--sp-4);
+    }
+
+    .auth-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--sp-1);
+    }
+    .auth-sub {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--sp-6);
+      line-height: 1.5;
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+    .auth-row { display: flex; flex-direction: row; gap: var(--sp-3); }
+    .auth-row .auth-field { flex: 1; min-width: 0; }
+
+    .auth-field { display: flex; flex-direction: column; gap: 6px; }
+
+    .auth-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+    }
+
+    .auth-input,
+    .auth-select {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg-surface-2);
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--r-md);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+    .auth-input:focus,
+    .auth-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--brand-dim);
+    }
+    .auth-input::placeholder { color: var(--text-tertiary); }
+    .auth-input.is-error,
+    .auth-select.is-error {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 3px var(--color-danger-dim);
+    }
+    .auth-select { cursor: pointer; }
+
+    .field-hint {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      margin-top: 1px;
+    }
+
+    /* ── Alerts ── */
+    .auth-alert {
+      display: none;
+      align-items: flex-start;
+      gap: var(--sp-3);
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      font-size: 0.83rem;
+      line-height: 1.5;
+      margin-bottom: var(--sp-2);
+    }
+    .auth-alert.is-visible { display: flex; }
+    .auth-alert svg { flex-shrink: 0; margin-top: 2px; }
+
+    .auth-alert--warning {
+      background: var(--color-warning-dim, rgba(234,179,8,0.1));
+      border: 1px solid var(--color-warning, #ca8a04);
+      color: var(--color-warning, #ca8a04);
+    }
+    .auth-alert--error {
+      background: var(--color-danger-dim);
+      border: 1px solid var(--color-danger);
+      color: var(--color-danger);
+    }
+    .auth-alert--success {
+      background: var(--color-success-dim);
+      border: 1px solid var(--color-success);
+      color: var(--color-success);
+    }
+
+    /* ── Submit ── */
+    .auth-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--brand-500);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-lg);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: var(--sp-2);
+      transition: background-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+    }
+    .auth-submit:hover { background: var(--brand-600); transform: translateY(-1px); box-shadow: var(--shadow-brand); }
+    .auth-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: var(--sp-5);
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+    }
+    .auth-footer a { color: var(--brand-400); font-weight: 600; }
+
+    /* ── Theme toggle ── */
+    .auth-theme-btn {
+      position: fixed;
+      top: var(--sp-4); right: var(--sp-4);
+      width: 36px; height: 36px;
+      border-radius: var(--r-full);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      overflow: hidden;
+      z-index: 10;
+      transition: color var(--t-fast), border-color var(--t-fast);
+    }
+    .auth-theme-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+    /* ── Divider ── */
+    .auth-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+    .auth-section-label::before,
+    .auth-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    @media (max-width: 480px) {
+      .auth-row { flex-direction: column; }
+      .auth-card { padding: var(--sp-6) var(--sp-5); }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="auth-theme-btn" id="theme-toggle" aria-label="Toggle theme">
+    <div class="theme-toggle__inner">
+      <div class="theme-toggle__icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </div>
+      <div class="theme-toggle__icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </div>
+  </button>
+
+  <div class="auth-card">
+
+    <a href="/" class="auth-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to home
+    </a>
+
+    <div class="auth-logo">SC</div>
+    <h1 class="auth-title">Create account</h1>
+    <p class="auth-sub">Your email must be added by your lecturer before you can register.</p>
+
+    <!-- Alert: email not in system -->
+    <div class="auth-alert auth-alert--warning {% if error == 'not_approved' %}is-visible{% endif %}" id="alert-notfound">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <span>
+        <strong>Email not found.</strong><br>
+        Ask your lecturer to add your email to the course first, then try again.
+      </span>
+    </div>
+
+    <!-- Alert: account already exists -->
+    <div class="auth-alert auth-alert--error {% if error == 'exists' %}is-visible{% endif %}" id="alert-exists">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>An account with this email already exists. <a href="/login" style="color:inherit;font-weight:700">Log in instead.</a></span>
+    </div>
+
+    <!-- Alert: generic error -->
+    <div class="auth-alert auth-alert--error {% if error == 'generic' %}is-visible{% endif %}" id="alert-generic">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      </svg>
+      Something went wrong. Please try again.
+    </div>
+
+    <form class="auth-form" method="POST" action="/register" id="register-form" novalidate>
+
+      <!-- Personal info -->
+      <div class="auth-section-label">Personal Info</div>
+
+      <div class="auth-row">
+        <div class="auth-field">
+          <label class="auth-label" for="first_name">First Name</label>
+          <input class="auth-input" id="first_name" name="first_name" type="text"
+                 placeholder="Noam"
+                 value="{{ form.first_name | default('') }}"
+                 autocomplete="given-name" required />
+        </div>
+        <div class="auth-field">
+          <label class="auth-label" for="last_name">Last Name</label>
+          <input class="auth-input" id="last_name" name="last_name" type="text"
+                 placeholder="Freiman"
+                 value="{{ form.last_name | default('') }}"
+                 autocomplete="family-name" required />
+        </div>
+      </div>
+
+      <div class="auth-row">
+        <div class="auth-field">
+          <label class="auth-label" for="age">Age</label>
+          <input class="auth-input" id="age" name="age" type="number"
+                 placeholder="22" min="16" max="99"
+                 value="{{ form.age | default('') }}"
+                 required />
+        </div>
+        <div class="auth-field">
+          <label class="auth-label" for="phone">Phone</label>
+          <input class="auth-input" id="phone" name="phone" type="tel"
+                 placeholder="05X-XXX-XXXX"
+                 value="{{ form.phone | default('') }}"
+                 autocomplete="tel" required />
+        </div>
+      </div>
+
+      <!-- Account info -->
+      <div class="auth-section-label">Account</div>
+
+      <div class="auth-field">
+        <label class="auth-label" for="email">Email</label>
+        <input class="auth-input" id="email" name="email" type="email"
+               placeholder="you@university.edu"
+               value="{{ form.email | default('') }}"
+               autocomplete="email" required />
+        <span class="field-hint">Must match the email your lecturer registered you with.</span>
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label" for="password">Password</label>
+        <input class="auth-input" id="password" name="password" type="password"
+               placeholder="At least 8 characters"
+               autocomplete="new-password" required minlength="8" />
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label" for="password2">Confirm Password</label>
+        <input class="auth-input" id="password2" name="password2" type="password"
+               placeholder="Repeat password"
+               autocomplete="new-password" required />
+        <span class="field-hint" id="pw-match-hint" style="display:none;color:var(--color-danger)">Passwords do not match.</span>
+      </div>
+
+      <button class="auth-submit" type="submit" id="submit-btn">Create Account</button>
+
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login">Log in</a>
+    </p>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ── Theme ── */
+      var html = document.documentElement;
+      html.setAttribute('data-theme', localStorage.getItem('sca-theme') || 'dark');
+      document.getElementById('theme-toggle').addEventListener('click', function () {
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('sca-theme', next);
+      });
+
+      /* ── Live password match hint ── */
+      var pw2   = document.getElementById('password2');
+      var hint  = document.getElementById('pw-match-hint');
+      pw2.addEventListener('input', function () {
+        var p1 = document.getElementById('password').value;
+        if (pw2.value && p1 !== pw2.value) {
+          hint.style.display = 'block';
+          pw2.classList.add('is-error');
+        } else {
+          hint.style.display = 'none';
+          pw2.classList.remove('is-error');
+        }
+      });
+
+      /* ── Client validation on submit ── */
+      document.getElementById('register-form').addEventListener('submit', function (e) {
+        var required = ['first_name', 'last_name', 'age', 'phone', 'email', 'password', 'password2'];
+        var ok = true;
+
+        required.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el.value.trim()) {
+            el.classList.add('is-error');
+            ok = false;
+          } else {
+            el.classList.remove('is-error');
+          }
+        });
+
+        /* Age range */
+        var ageVal = parseInt(document.getElementById('age').value);
+        if (ageVal < 16 || ageVal > 99) {
+          document.getElementById('age').classList.add('is-error');
+          ok = false;
+        }
+
+        /* Password length */
+        var pwVal = document.getElementById('password').value;
+        if (pwVal && pwVal.length < 8) {
+          document.getElementById('password').classList.add('is-error');
+          ok = false;
+        }
+
+        /* Password match */
+        var p2Val = document.getElementById('password2').value;
+        if (pwVal && p2Val && pwVal !== p2Val) {
+          document.getElementById('password2').classList.add('is-error');
+          hint.style.display = 'block';
+          ok = false;
+        }
+
+        if (!ok) e.preventDefault();
+      });
+
+      /* ── Remove error state on input ── */
+      document.querySelectorAll('.auth-input, .auth-select').forEach(function (el) {
+        el.addEventListener('input', function () {
+          this.classList.remove('is-error');
+        });
+      });
+
+    })();
+  </script>
+</body>
+</html>

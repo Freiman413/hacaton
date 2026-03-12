@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Campus Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── CAMPUS BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=1800&q=85&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 35%;
+      z-index: 0;
+    }
+
+    /* Light overlay — bright and airy */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(240, 246, 255, 0.55);
+      z-index: 0;
+    }
+
+    /* ── HEADLINE ── */
+    .headline {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .headline h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 700;
+      color: #0f2a4a;
+      line-height: 1.1;
+      text-shadow: 0 1px 20px rgba(255,255,255,0.8);
+    }
+
+    .headline h1 em {
+      font-style: italic;
+      color: #1a56db;
+    }
+
+    .headline p {
+      margin-top: 12px;
+      font-size: 1rem;
+      font-weight: 300;
+      color: #2c4a6e;
+      text-shadow: 0 1px 10px rgba(255,255,255,0.9);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── CARD ── */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      padding: 44px 44px 36px;
+      width: min(440px, 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow:
+        0 20px 60px rgba(15, 42, 74, 0.15),
+        0 4px 16px rgba(15, 42, 74, 0.08);
+      animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+    }
+
+    /* Logo */
+    .logo {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #1a56db, #0d9488);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 700; color: #fff;
+      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.35);
+      margin-bottom: 20px;
+      animation: logopulse 3s ease-in-out infinite;
+    }
+    @keyframes logopulse {
+      0%,100% { box-shadow: 0 6px 20px rgba(26,86,219,0.35); }
+      50%      { box-shadow: 0 8px 28px rgba(26,86,219,0.55); }
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #0f2a4a;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .card-sub {
+      font-size: 0.88rem;
+      color: #4a6888;
+      line-height: 1.65;
+      max-width: 290px;
+      font-weight: 300;
+      margin-bottom: 32px;
+    }
+
+    /* Buttons */
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+      position: relative; overflow: hidden;
+    }
+    .btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .btn::after {
+      content: '';
+      position: absolute; inset: 0; left: -100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.4s;
+    }
+    .btn:hover::after { left: 100%; }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #1a56db, #0d9488);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(26,86,219,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 24px rgba(26,86,219,0.45); }
+
+    .btn-secondary {
+      background: rgba(15, 42, 74, 0.06);
+      color: #0f2a4a;
+      border: 1.5px solid rgba(15, 42, 74, 0.15);
+    }
+    .btn-secondary:hover {
+      background: rgba(15, 42, 74, 0.1);
+      border-color: rgba(26, 86, 219, 0.4);
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.75rem; color: #9ab0c8;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(15, 42, 74, 0.1);
+    }
+
+    .card-footer {
+      margin-top: 24px;
+      font-size: 0.72rem;
+      color: #9ab0c8;
+      font-family: 'Inter', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Big headline above card -->
+  <div class="headline">
+    <h1>The future is<br><em>in your hands.</em></h1>
+    <p>Your campus. Your AI. Your results.</p>
+  </div>
+
+  <!-- Card — same structure as original -->
+  <div class="card">
+
+    <div class="logo">SC</div>
+
+    <h2 class="card-title">Smart Campus<br>Assistant</h2>
+    <p class="card-sub">Your AI-powered academic companion — schedules, grades, office hours and more.</p>
+
+    <div class="actions">
+      <a href="/login" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Log In
+      </a>
+
+      <div class="divider">or</div>
+
+      <a href="/register" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+        Create Account
+      </a>
+    </div>
+
+    <p class="card-footer">Smart Campus · 2026</p>
+  </div>
+
+</body>
+</html>

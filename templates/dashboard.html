@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}Chat{% endblock %}
+{% block meta_description %}Chat with your AI campus assistant about exams, schedules, office hours, and more{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <aside class="sidebar" aria-label="Sidebar navigation">
+    <div class="sidebar__section">
+      <button class="new-conversation-btn" id="new-conversation-btn" aria-label="Start a new conversation">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New conversation
+      </button>
+    </div>
+  </aside>
+
+  <section class="chat-area" aria-label="Chat">
+
+    <div class="messages-container" id="messages-container" role="log" aria-live="polite" aria-label="Conversation messages">
+
+      <div class="welcome-screen" id="welcome-screen" aria-label="Welcome">
+
+        <div class="welcome-orb" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+
+        <h1 class="welcome-heading">
+          Hi <em>{{ current_user.first_name }},</em><br>
+          what can I help with?
+        </h1>
+
+        <p class="welcome-subtitle">
+          Ask me anything about your exams, schedule, office hours, room locations, or lecturers.
+        </p>
+
+        <div class="suggestion-grid" role="list">
+          <button class="suggestion-chip" role="listitem" data-chip="When is my next exam?">
+            <span class="chip-icon chip-icon--amber" aria-hidden="true">📅</span>
+            <span class="chip-text">When is my next exam?</span>
+          </button>
+          <button class="suggestion-chip" role="listitem" data-chip="Grade needed to pass Algorithms?">
+            <span class="chip-icon chip-icon--green" aria-hidden="true">📊</span>
+            <span class="chip-text">Grade needed to pass Algorithms?</span>
+          </button>
+          <button class="suggestion-chip" role="listitem" data-chip="Prof. Cohen's office hours?">
+            <span class="chip-icon chip-icon--violet" aria-hidden="true">🕐</span>
+            <span class="chip-text">Prof. Cohen's office hours?</span>
+          </button>
+          <button class="suggestion-chip" role="listitem" data-chip="Where is OS class held?">
+            <span class="chip-icon chip-icon--brand" aria-hidden="true">📍</span>
+            <span class="chip-text">Where is OS class held?</span>
+          </button>
+          <button class="suggestion-chip" role="listitem" data-chip="My schedule this week">
+            <span class="chip-icon chip-icon--brand" aria-hidden="true">📋</span>
+            <span class="chip-text">My schedule this week</span>
+          </button>
+          <button class="suggestion-chip" role="listitem" data-chip="Who are my lecturers?">
+            <span class="chip-icon chip-icon--violet" aria-hidden="true">👥</span>
+            <span class="chip-text">Who are my lecturers?</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="chat-input-bar" role="region" aria-label="Message input">
+      <div class="chat-input-box">
+        <textarea
+          class="chat-textarea"
+          id="chat-textarea"
+          placeholder="Ask about exams, schedules, office hours…"
+          rows="1"
+          aria-label="Type your message"
+          aria-multiline="true"
+        ></textarea>
+        <button class="send-btn" id="send-btn" disabled aria-label="Send message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="chat-input-meta">
+        <span class="chat-hint">Enter to send · Shift+Enter for new line</span>
+        <span class="chat-status" id="chat-status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          AI is thinking…
+        </span>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<style>
+  .sched-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+    table-layout: fixed;
+    margin-top: 8px;
+  }
+  .sched-table th {
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+    font-weight: 700;
+    padding: 5px 3px;
+    text-align: center;
+    border: 1px solid var(--border-subtle);
+    font-size: 0.62rem;
+    letter-spacing: 0.02em;
+  }
+  .sched-table td {
+    padding: 2px 3px;
+    border: 1px solid var(--border-subtle);
+    text-align: center;
+    vertical-align: middle;
+    height: 24px;
+    font-size: 0.62rem;
+  }
+  .sched-time {
+    font-weight: 700;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    background: var(--bg-surface-2);
+    width: 40px;
+  }
+  .sched-lesson { background: var(--brand-dim); color: var(--text-primary); font-weight: 600; }
+  .sched-exam { background: rgba(234,179,8,0.15); color: #ca8a04; font-weight: 700; }
+  .sched-personal { background: rgba(139,92,246,0.15); color: #7c3aed; font-weight: 600; font-style: italic; }
+  .sched-conflict { background: var(--color-danger-dim); border: 1px solid var(--color-danger); }
+  .sched-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .sched-pdf-btn:hover { background: var(--brand-500); color: #fff; border-color: var(--brand-500); }
+</style>
+
+<aside class="side-panel" id="profile-panel" aria-label="Profile panel" aria-hidden="true" role="dialog">
+  <div class="panel-header">
+    <h2 class="panel-header__title">My Profile</h2>
+    <button class="panel-close-btn" aria-label="Close profile panel">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel-body">
+    <div class="profile-hero">
+      <div class="profile-avatar-lg" aria-hidden="true">
+        {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
+      </div>
+      <div class="profile-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+      <div class="profile-email">{{ current_user.email }}</div>
+      <div class="badge-row" style="margin-bottom: var(--sp-2);">
+        <span class="badge badge--success"><span class="badge-dot"></span>Student</span>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <p class="profile-section__label">Academic Status</p>
+      <div class="info-row"><span class="info-row__label">Student ID</span><span class="info-row__value">{{ current_user.student_id }}</span></div>
+    </div>
+
+    <div class="profile-section">
+      <p class="profile-section__label">My Courses</p>
+      {% if current_user.courses %}
+        {% for course in current_user.courses %}
+          <div class="info-row" style="flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-weight: 600; color: var(--text-primary);">{{ course.course_name }}</span>
+            <span style="font-size: 0.75rem; color: var(--text-tertiary); font-family: var(--font-mono);">Course ID: {{ course.course_id }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="info-row"><span class="info-row__label">Not registered to any courses</span></div>
+      {% endif %}
+    </div>
+
+    <div class="profile-section">
+      <p class="profile-section__label">Account</p>
+      <button class="profile-action-btn profile-action-btn--danger" onclick="window.location.href='/logout'">
+        <span class="profile-action-btn__icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </span>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</aside>
+{% endblock %}
+
+{% block footer_extra %}
+<script>
+(function () {
+  'use strict';
+
+  var USER_INITIALS = "{{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}";
+
+  var conversationHistory = [];
+  var scheduleMode = false;
+  var scheduleItems = null;
+  var scheduleConflicts = null;
+  var dominantCourse = "none";
+
+  var messagesContainer  = document.getElementById('messages-container');
+  var welcomeScreen      = document.getElementById('welcome-screen');
+  var textarea           = document.getElementById('chat-textarea');
+  var sendBtn            = document.getElementById('send-btn');
+  var chatStatus         = document.getElementById('chat-status');
+  var newConversationBtn = document.getElementById('new-conversation-btn');
+
+  var welcomeHidden = false;
+  var isLoading     = false;
+
+  function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function hideWelcome() {
+    if (welcomeHidden) return;
+    welcomeHidden = true;
+    welcomeScreen.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    welcomeScreen.style.opacity = '0';
+    welcomeScreen.style.transform = 'translateY(-8px)';
+    setTimeout(function () { welcomeScreen.style.display = 'none'; }, 280);
+  }
+
+  function appendUserMessage(text) {
+    var row = document.createElement('div');
+    row.className = 'message-row message-row--user';
+    row.innerHTML =
+      '<div class="message-content">' +
+        '<div class="message-bubble message-bubble--user">' + escapeHtml(text) + '</div>' +
+        '<div class="message-timestamp">' + formatTime(new Date()) + '</div>' +
+      '</div>' +
+      '<div class="message-avatar message-avatar--user" aria-hidden="true">' + escapeHtml(USER_INITIALS) + '</div>';
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+  }
+
+  function appendTypingIndicator() {
+    var el = document.createElement('div');
+    el.className = 'typing-indicator';
+    el.id = 'typing-indicator';
+    el.innerHTML =
+      '<div class="message-avatar message-avatar--ai" aria-hidden="true">AI</div>' +
+      '<div class="typing-dots" aria-label="AI is typing">' +
+        '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>' +
+      '</div>';
+    messagesContainer.appendChild(el);
+    scrollToBottom();
+  }
+
+  function removeTypingIndicator() {
+    var el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function appendAIMessage(text) {
+    var row = document.createElement('div');
+    row.className = 'message-row';
+    var formatted = escapeHtml(text).replace(/\n/g, '<br>');
+    row.innerHTML =
+      '<div class="message-avatar message-avatar--ai" aria-hidden="true">AI</div>' +
+      '<div class="message-content">' +
+        '<div class="message-bubble message-bubble--ai">' + formatted + '</div>' +
+        '<div class="message-timestamp">' + formatTime(new Date()) + '</div>' +
+      '</div>';
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+  }
+
+  function appendErrorMessage(text) {
+    var row = document.createElement('div');
+    row.className = 'message-row';
+    row.innerHTML =
+      '<div class="message-avatar message-avatar--ai" aria-hidden="true">AI</div>' +
+      '<div class="message-content">' +
+        '<div class="message-bubble message-bubble--ai" style="color:var(--color-danger)">' + escapeHtml(text) + '</div>' +
+        '<div class="message-timestamp">' + formatTime(new Date()) + '</div>' +
+      '</div>';
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+  }
+
+  function buildScheduleHtml(items, conflicts, days) {
+    if (!items || !items.length) return '<p style="color:var(--text-tertiary)">No schedule data.</p>';
+
+    var today = new Date();
+    days = [];
+    for (var d = 0; d < 7; d++) {
+      var day = new Date(today);
+      day.setDate(today.getDate() + d);
+      var yyyy = day.getFullYear();
+      var mm = String(day.getMonth() + 1).padStart(2, '0');
+      var dd = String(day.getDate()).padStart(2, '0');
+      days.push(yyyy + '-' + mm + '-' + dd);
+    }
+
+    var conflictSet = {};
+    if (conflicts) {
+      conflicts.forEach(function(c) {
+        conflictSet[c.date + '_' + c.hour_a] = true;
+        conflictSet[c.date + '_' + c.hour_b] = true;
+      });
+    }
+
+    var grid = {};
+    items.forEach(function(item) {
+      var startHour = parseInt(String(item.hour).split(':')[0]) || parseInt(item.hour) || 8;
+      var duration = item.duration || 60;
+      var slots = Math.ceil(duration / 60);
+      for (var s = 0; s < slots; s++) {
+        var key = item.date + '_' + (startHour + s);
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(item);
+      }
+    });
+
+    var hours = [];
+    for (var h = 8; h <= 20; h++) hours.push(h);
+
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    var html = '<table class="sched-table"><thead><tr><th></th>';
+    days.forEach(function(day) {
+      var d = new Date(day);
+      var label = dayNames[d.getDay()] + ' ' + day.substring(5);
+      html += '<th>' + label + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    hours.forEach(function(hour) {
+      html += '<tr><td class="sched-time">' + (hour < 10 ? '0' : '') + hour + ':00</td>';
+      days.forEach(function(day) {
+        var key = day + '_' + hour;
+        var cellItems = grid[key] || [];
+        var isConflict = conflictSet[day + '_' + hour] || false;
+
+        if (cellItems.length > 0) {
+          var item = cellItems[0];
+          var cls = 'sched-lesson';
+          if (item.type === 'exam') cls = 'sched-exam';
+          if (item.type === 'personal') cls = 'sched-personal';
+          if (isConflict) cls += ' sched-conflict';
+          var loc = '';
+          if (item.building) loc = 'B' + item.building + 'R' + item.room;
+          html += '<td class="' + cls + '">' + item.course_name;
+          if (loc) html += '<br><small style="opacity:0.7">' + loc + '</small>';
+          html += '</td>';
+        } else {
+          html += '<td></td>';
+        }
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function appendScheduleMessage(text, items, conflicts, days) {
+    var row = document.createElement('div');
+    row.className = 'message-row';
+
+    var formatted = escapeHtml(text).replace(/\n/g, '<br>');
+    var tableHtml = buildScheduleHtml(items, conflicts, days);
+    var tableId = 'sched-' + Date.now();
+
+    row.innerHTML =
+      '<div class="message-avatar message-avatar--ai" aria-hidden="true">AI</div>' +
+      '<div class="message-content">' +
+        '<div class="message-bubble message-bubble--ai">' +
+          formatted +
+          '<div id="' + tableId + '">' + tableHtml + '</div>' +
+          '<button class="sched-pdf-btn" data-table="' + tableId + '">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+            ' Export PDF' +
+          '</button>' +
+        '</div>' +
+        '<div class="message-timestamp">' + formatTime(new Date()) + '</div>' +
+      '</div>';
+
+    messagesContainer.appendChild(row);
+
+    row.querySelector('.sched-pdf-btn').addEventListener('click', function() {
+      var tbl = document.getElementById(this.getAttribute('data-table'));
+      var pw = window.open('', '_blank');
+      pw.document.write(
+        '<html><head><title>Weekly Schedule</title>' +
+        '<style>' +
+        '@page { size: landscape; margin: 15mm; }' +
+        'body { font-family: "Segoe UI", Arial, sans-serif; padding: 30px; background: #fff; }' +
+        'h2 { text-align: center; color: #1e293b; font-size: 22px; margin-bottom: 5px; }' +
+        'p.subtitle { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 20px; }' +
+        'table { width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }' +
+        'th { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-weight: 700; padding: 10px 6px; text-align: center; font-size: 11px; letter-spacing: 0.03em; }' +
+        'td { padding: 6px 4px; border: 1px solid #e2e8f0; text-align: center; vertical-align: middle; font-size: 10px; height: 28px; }' +
+        '.sched-time { font-weight: 700; color: #475569; background: #f8fafc; font-size: 10px; }' +
+        '.sched-lesson { background: linear-gradient(135deg, #dbeafe, #eff6ff); color: #1e40af; font-weight: 600; border-left: 3px solid #3b82f6; }' +
+        '.sched-exam { background: linear-gradient(135deg, #fef3c7, #fffbeb); color: #92400e; font-weight: 700; border-left: 3px solid #f59e0b; }' +
+        '.sched-personal { background: linear-gradient(135deg, #ede9fe, #f5f3ff); color: #5b21b6; font-weight: 600; font-style: italic; border-left: 3px solid #8b5cf6; }' +
+        '.sched-conflict { background: linear-gradient(135deg, #fee2e2, #fff1f2); border: 2px solid #ef4444; color: #dc2626; }' +
+        'tr:hover td { background-color: rgba(99, 102, 241, 0.04); }' +
+        '</style></head><body>' +
+        '<h2>Weekly Schedule</h2>' +
+        '<p class="subtitle">Smart Campus Assistant</p>' +
+        tbl.innerHTML + '</body></html>'
+      );
+      pw.document.close();
+      pw.print();
+    });
+
+    scrollToBottom();
+  }
+
+  function sendToAPI(userText) {
+    conversationHistory.push({ role: 'user', content: userText });
+
+    var payload = { messages: conversationHistory };
+    if (scheduleMode) {
+      payload.schedule_mode = true;
+      payload.schedule_items = scheduleItems;
+      payload.schedule_conflicts = scheduleConflicts;
+      payload.dominant_course = dominantCourse;
+    }
+
+    return fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var reply = data.reply || data.message || data.content || 'No response.';
+      conversationHistory.push({ role: 'assistant', content: reply });
+
+      if (data.category === 'schedule' && data.schedule_mode) {
+        scheduleMode = true;
+        scheduleItems = data.schedule_items || scheduleItems;
+        scheduleConflicts = data.schedule_conflicts || scheduleConflicts;
+        dominantCourse = data.dominant_course || dominantCourse;
+        return { reply: reply, showTable: true, items: scheduleItems, conflicts: scheduleConflicts, days: data.schedule_days };
+      }
+
+      if (data.category === 'schedule_complete') {
+        scheduleMode = false;
+        return { reply: reply, showTable: true, items: data.schedule_items, conflicts: [], days: data.schedule_days };
+      }
+
+      if (data.category === 'exit_schedule') {
+        scheduleMode = false;
+        scheduleItems = null;
+        scheduleConflicts = null;
+        dominantCourse = "none";
+      }
+
+      return { reply: reply, showTable: false };
+    });
+  }
+
+  function sendMessage() {
+    var text = textarea.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    textarea.disabled = true;
+
+    hideWelcome();
+    appendUserMessage(text);
+
+    textarea.value = '';
+    textarea.style.height = '';
+    updateSendBtn();
+
+    appendTypingIndicator();
+    chatStatus.classList.add('is-visible');
+
+    sendToAPI(text)
+      .then(function(result) {
+        removeTypingIndicator();
+        chatStatus.classList.remove('is-visible');
+
+        if (result.showTable) {
+          appendScheduleMessage(result.reply, result.items, result.conflicts, result.days);
+        } else {
+          appendAIMessage(result.reply);
+        }
+      })
+      .catch(function(err) {
+        removeTypingIndicator();
+        chatStatus.classList.remove('is-visible');
+        appendErrorMessage('Something went wrong. Please try again.');
+      })
+      .finally(function() {
+        isLoading = false;
+        textarea.disabled = false;
+        textarea.focus();
+        sendBtn.disabled = textarea.value.trim() === '';
+        scrollToBottom();
+      });
+  }
+
+  function updateSendBtn() {
+    sendBtn.disabled = textarea.value.trim() === '' || isLoading;
+  }
+
+  var MAX_WORDS = 200;
+
+  function countWords(text) {
+    return text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+  }
+
+  function autoResize() {
+    var words = countWords(textarea.value);
+    if (words > MAX_WORDS) {
+      var trimmed = textarea.value.trim().split(/\s+/).slice(0, MAX_WORDS).join(' ');
+      textarea.value = trimmed;
+    }
+    textarea.style.height = 'auto';
+    var maxH = 120;
+    textarea.style.height = Math.min(textarea.scrollHeight, maxH) + 'px';
+    textarea.style.overflowY = textarea.scrollHeight > maxH ? 'auto' : 'hidden';
+    updateSendBtn();
+  }
+
+  textarea.addEventListener('input', autoResize);
+  textarea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  sendBtn.addEventListener('click', sendMessage);
+
+  document.querySelectorAll('.suggestion-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var text = chip.getAttribute('data-chip');
+      if (text) { textarea.value = text; autoResize(); textarea.focus(); sendMessage(); }
+    });
+  });
+
+  if (newConversationBtn) {
+    newConversationBtn.addEventListener('click', function() {
+      conversationHistory = [];
+      scheduleMode = false;
+      scheduleItems = null;
+      scheduleConflicts = null;
+      dominantCourse = "none";
+      var rows = messagesContainer.querySelectorAll('.message-row, .typing-indicator');
+      rows.forEach(function(r) { r.remove(); });
+      welcomeHidden = false;
+      welcomeScreen.style.display = '';
+      welcomeScreen.style.opacity = '';
+      welcomeScreen.style.transform = '';
+      textarea.value = '';
+      textarea.style.height = '';
+      chatStatus.classList.remove('is-visible');
+      isLoading = false;
+      updateSendBtn();
+    });
+  }
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block title %}Create Lecturer & Course{% endblock %}
+
+{% block content %}
+<div class="lec-page">
+
+  <div class="lec-header">
+    <div class="lec-header__left">
+      <div class="lec-header__eyebrow">
+        <span class="lec-course-chip" style="background:var(--color-danger-dim);color:var(--color-danger)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Admin Panel
+        </span>
+      </div>
+      <h1 class="lec-title">Create Lecturer & Course</h1>
+    </div>
+    <div class="lec-save-status" id="lec-save-status">
+      <span class="lec-save-dot" id="lec-save-dot"></span>
+      <span id="lec-save-text">Ready</span>
+    </div>
+  </div>
+
+  <div class="lec-panel">
+    <div class="lec-panel__header">
+      <div>
+        <h2 class="lec-panel__title">Lecturers & Courses</h2>
+        <p class="lec-panel__desc">email · department · course · degree · year</p>
+      </div>
+      <button class="lec-btn lec-btn--primary" id="add-lecturer-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Course & Lecturer
+      </button>
+    </div>
+
+    <div class="admin-grid-wrap">
+      <div class="admin-grid" id="lecturers-grid"></div>
+      <div class="lec-empty" id="lecturers-empty">
+        <div class="lec-empty__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <p>No lecturers yet</p>
+        <span>Click <strong>Add Course & Lecturer</strong> to get started</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BACKDROP -->
+<div class="lec-modal-backdrop" id="lec-modal-backdrop"></div>
+
+<!-- MODAL -->
+<div class="lec-modal" id="modal-lecturer" role="dialog" aria-modal="true" aria-labelledby="modal-lecturer-title">
+  <div class="lec-modal__header">
+    <h3 class="lec-modal__title" id="modal-lecturer-title">Add Lecturer & Course</h3>
+    <button class="lec-modal__close" data-close-modal aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="lec-modal__body">
+    <div class="modal-section-label">Lecturer Details</div>
+    <div class="lec-field-row">
+      <div class="lec-field">
+        <label class="lec-label">first_name</label>
+        <input class="lec-input" id="lec-first" type="text" placeholder="David" />
+      </div>
+      <div class="lec-field">
+        <label class="lec-label">last_name</label>
+        <input class="lec-input" id="lec-last" type="text" placeholder="Cohen" />
+      </div>
+    </div>
+    <div class="lec-field">
+      <label class="lec-label">email</label>
+      <input class="lec-input" id="lec-email" type="email" placeholder="cohen@university.edu" />
+    </div>
+    <div class="lec-field">
+      <label class="lec-label">department</label>
+      <input class="lec-input" id="lec-department" type="text" placeholder="Computer Science" />
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field">
+        <label class="lec-label">password</label>
+        <input class="lec-input" id="lec-password" type="password" placeholder="Min 8 characters" />
+      </div>
+      <div class="lec-field">
+        <label class="lec-label">confirm password</label>
+        <input class="lec-input" id="lec-password2" type="password" placeholder="Repeat password" />
+        <span id="lec-pw-hint" style="display:none;color:var(--color-danger);font-size:0.72rem;margin-top:2px;">Passwords do not match.</span>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-section-label">Course Details</div>
+    <div class="lec-field">
+      <label class="lec-label">course_name</label>
+      <input class="lec-input" id="course-name" type="text" placeholder="Algorithms" />
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field">
+        <label class="lec-label">start_date</label>
+        <input class="lec-input" id="course-start" type="date" />
+      </div>
+      <div class="lec-field">
+        <label class="lec-label">end_date</label>
+        <input class="lec-input" id="course-end" type="date" />
+      </div>
+    </div>
+    <div class="lec-field-row">
+      <div class="lec-field">
+        <label class="lec-label">course_year</label>
+        <input class="lec-input" id="course-year" type="number" min="1" max="4" placeholder="2" />
+      </div>
+      <div class="lec-field">
+        <label class="lec-label">degree_type</label>
+        <select class="lec-select" id="course-degree">
+          <option value="B.Sc">B.Sc</option>
+          <option value="M.Sc">M.Sc</option>
+          <option value="Ph.D">Ph.D</option>
+        </select>
+      </div>
+    </div>
+    <div id="modal-error" style="display:none;color:var(--color-danger);font-size:0.8rem;padding:8px 12px;background:var(--color-danger-dim);border-radius:var(--r-md);"></div>
+  </div>
+  <div class="lec-modal__footer">
+    <button class="lec-btn lec-btn--ghost" data-close-modal>Cancel</button>
+    <button class="lec-btn lec-btn--primary" id="save-lecturer-btn">Save Lecturer & Course</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block footer_extra %}
+<style>
+.lec-page { max-width:1140px; margin:0 auto; padding:calc(var(--nav-height) + var(--sp-10)) var(--sp-6) var(--sp-12); min-height:100vh; }
+.lec-header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-7); flex-wrap:wrap; }
+.lec-header__eyebrow { margin-bottom:6px; }
+.lec-course-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:var(--r-full); font-family:var(--font-mono); font-size:0.7rem; font-weight:700; letter-spacing:0.04em; }
+.lec-title { font-family:var(--font-display); font-size:1.65rem; font-weight:700; color:var(--text-primary); line-height:1.15; }
+.lec-subtitle { font-family:var(--font-mono); font-size:0.78rem; color:var(--text-secondary); margin-top:4px; }
+.lec-save-status { display:flex; align-items:center; gap:7px; font-size:0.75rem; color:var(--text-tertiary); font-family:var(--font-mono); padding:6px 12px; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--r-full); white-space:nowrap; margin-top:6px; }
+.lec-save-dot { width:7px; height:7px; border-radius:var(--r-full); background:var(--color-success); flex-shrink:0; }
+.lec-save-dot.is-saving { background:var(--brand-500); animation:lec-pulse 0.8s ease-in-out infinite; }
+.lec-panel { display:block; }
+.lec-panel__header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-4); margin-bottom:var(--sp-5); }
+.lec-panel__header > .lec-btn { flex-shrink:0; align-self:flex-start; }
+.lec-panel__title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-primary); }
+.lec-panel__desc { font-size:0.72rem; color:var(--text-tertiary); font-family:var(--font-mono); margin-top:3px; }
+
+/* ── Grid ── */
+.admin-grid-wrap { max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+.admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3); }
+.admin-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  position: relative;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.admin-card:hover { border-color: var(--border-focus); box-shadow: var(--shadow-sm); }
+.admin-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-2); }
+.admin-card__name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--text-primary); }
+.admin-card__email { font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary); margin-top:1px; }
+.admin-card__divider { height:1px; background:var(--border-subtle); margin: var(--sp-1) 0; }
+.admin-card__course { font-family:var(--font-mono); font-size:0.8rem; font-weight:600; color:var(--brand-500); }
+.admin-card__meta { display:flex; gap:var(--sp-2); flex-wrap:wrap; }
+.admin-card__tag {
+  font-family:var(--font-mono);
+  font-size:0.68rem;
+  font-weight:600;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--bg-surface-2);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Empty ── */
+.lec-empty { display:flex; flex-direction:column; align-items:center; gap:var(--sp-3); padding:var(--sp-10) var(--sp-4) var(--sp-12); color:var(--text-tertiary); text-align:center; }
+.lec-empty.is-hidden { display:none; }
+.lec-empty__icon { width:52px; height:52px; border-radius:var(--r-lg); background:var(--bg-surface-2); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.lec-empty p { font-size:0.9rem; font-weight:600; color:var(--text-secondary); }
+.lec-empty span { font-size:0.8rem; }
+.lec-empty strong { color:var(--text-secondary); }
+
+/* ── Buttons ── */
+.lec-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--r-md); font-size:0.84rem; font-weight:600; cursor:pointer; border:none; white-space:nowrap; transition:background-color var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast); }
+.lec-btn:hover { transform:translateY(-1px); }
+.lec-btn--primary { background:var(--brand-500); color:#fff; }
+.lec-btn--primary:hover { background:var(--brand-600); box-shadow:var(--shadow-brand); }
+.lec-btn--ghost { background:var(--bg-surface-2); color:var(--text-secondary); border:1px solid var(--border-default); }
+.lec-btn--ghost:hover { color:var(--text-primary); background:var(--bg-surface-3); }
+.lec-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+/* ── Modal ── */
+.lec-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.2s ease; backdrop-filter:blur(3px); }
+.lec-modal-backdrop.is-visible { opacity:1; pointer-events:all; }
+.lec-modal { position:fixed; top:50%; left:50%; transform:translate(-50%,-46%); width:min(560px,calc(100vw - 32px)); background:var(--bg-surface); border:1px solid var(--border-default); border-radius:var(--r-xl); box-shadow:var(--shadow-xl); z-index:201; opacity:0; pointer-events:none; transition:opacity 0.2s ease,transform 0.2s var(--ease-out); }
+.lec-modal.is-visible { opacity:1; pointer-events:all; transform:translate(-50%,-50%); }
+.lec-modal__header { display:flex; align-items:center; justify-content:space-between; padding:var(--sp-5) var(--sp-5) var(--sp-4); border-bottom:1px solid var(--border-subtle); }
+.lec-modal__title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-primary); }
+.lec-modal__close { width:32px; height:32px; border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); background:none; border:none; cursor:pointer; transition:color var(--t-fast),background-color var(--t-fast); }
+.lec-modal__close:hover { color:var(--text-primary); background:var(--bg-surface-3); }
+.lec-modal__body { padding:var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-4); max-height:calc(100vh - 200px); overflow-y:auto; }
+.lec-modal__footer { display:flex; align-items:center; justify-content:flex-end; gap:var(--sp-3); padding:var(--sp-4) var(--sp-5); border-top:1px solid var(--border-subtle); }
+.lec-field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:0; }
+.lec-field-row { display:flex; gap:var(--sp-3); flex-wrap:wrap; }
+.lec-label { font-size:0.7rem; font-weight:700; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.07em; color:var(--text-tertiary); }
+.lec-input { width:100%; padding:9px 12px; background:var(--bg-surface-2); border:1.5px solid var(--border-default); border-radius:var(--r-md); color:var(--text-primary); font-family:var(--font-mono); font-size:0.875rem; outline:none; transition:border-color var(--t-fast),box-shadow var(--t-fast); box-sizing:border-box; }
+.lec-input:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px var(--brand-dim); }
+.lec-input::placeholder { color:var(--text-tertiary); }
+.lec-input.is-error { border-color:var(--color-danger); box-shadow:0 0 0 3px var(--color-danger-dim); }
+.lec-select { width:100%; padding:9px 12px; background:var(--bg-surface-2); border:1.5px solid var(--border-default); border-radius:var(--r-md); color:var(--text-primary); font-family:var(--font-mono); font-size:0.875rem; outline:none; cursor:pointer; transition:border-color var(--t-fast),box-shadow var(--t-fast); box-sizing:border-box; }
+.lec-select:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px var(--brand-dim); }
+.modal-section-label { font-size:0.65rem; font-weight:700; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.1em; color:var(--text-tertiary); display:flex; align-items:center; gap:var(--sp-3); }
+.modal-section-label::after { content:''; flex:1; height:1px; background:var(--border-subtle); }
+.modal-divider { height:1px; background:var(--border-subtle); }
+@keyframes lec-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@media (max-width:680px) {
+  .lec-page { padding:var(--sp-4) var(--sp-3) var(--sp-8); }
+  .admin-grid { grid-template-columns:1fr; }
+  .lec-field-row { flex-direction:column; }
+  .lec-panel__header { flex-direction:column; align-items:flex-start; }
+}
+</style>
+
+<script id="lec-data" type="application/json">{{ lecturers | tojson }}</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var records = JSON.parse(document.getElementById('lec-data').textContent);
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function getVal(id) { return document.getElementById(id).value.trim(); }
+  function shake(el) { el.classList.add('is-error'); el.focus(); setTimeout(function(){ el.classList.remove('is-error'); },1200); }
+
+  function setSaving(on) {
+    var dot  = document.getElementById('lec-save-dot');
+    var text = document.getElementById('lec-save-text');
+    if (on) { dot.classList.add('is-saving'); text.textContent = 'Saving…'; }
+    else    { dot.classList.remove('is-saving'); text.textContent = 'Saved'; }
+  }
+
+  /* ── Modal ── */
+  var backdrop = document.getElementById('lec-modal-backdrop');
+  function openModal() { document.getElementById('modal-lecturer').classList.add('is-visible'); backdrop.classList.add('is-visible'); }
+  function closeAll() { document.getElementById('modal-lecturer').classList.remove('is-visible'); backdrop.classList.remove('is-visible'); document.getElementById('modal-error').style.display='none'; }
+  backdrop.addEventListener('click', closeAll);
+  document.querySelectorAll('[data-close-modal]').forEach(function(b){ b.addEventListener('click', closeAll); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeAll(); });
+
+  /* ── Render cards ── */
+  function render() {
+    var grid  = document.getElementById('lecturers-grid');
+    var empty = document.getElementById('lecturers-empty');
+    grid.innerHTML = '';
+    if (!records.length) { empty.classList.remove('is-hidden'); return; }
+    empty.classList.add('is-hidden');
+    records.forEach(function(r) {
+      var card = document.createElement('div');
+        card.className = 'admin-card';
+      card.innerHTML =
+        '<div class="admin-card__top">' +
+          '<div>' +
+            '<div class="admin-card__name">' + esc(r.first_name) + ' ' + esc(r.last_name) + '</div>' +
+            '<div class="admin-card__email">' + esc(r.email) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="admin-card__divider"></div>' +
+        '<div class="admin-card__course">' + esc(r.course_name) + '</div>' +
+        '<div class="admin-card__meta">' +
+          '<span class="admin-card__tag">' + esc(r.department) + '</span>' +
+          '<span class="admin-card__tag">' + esc(r.degree_type) + '</span>' +
+          '<span class="admin-card__tag">Year ' + esc(r.course_year) + '</span>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+
+    grid.querySelectorAll('[data-id]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        records = records.filter(function(r){ return (r.lecturer_id || r.email) !== id; });
+        render();
+      });
+    });
+  }
+
+  /* ── Add button ── */
+  document.getElementById('add-lecturer-btn').addEventListener('click', function() {
+    ['lec-first','lec-last','lec-email','lec-department','lec-password','lec-password2',
+     'course-name','course-start','course-end','course-year'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('lec-pw-hint').style.display = 'none';
+    openModal();
+  });
+
+  /* ── Password match ── */
+  var pw1 = document.getElementById('lec-password');
+  var pw2 = document.getElementById('lec-password2');
+  var pwHint = document.getElementById('lec-pw-hint');
+  pw2.addEventListener('input', function() {
+    if (pw2.value && pw1.value !== pw2.value) { pwHint.style.display='block'; pw2.classList.add('is-error'); }
+    else { pwHint.style.display='none'; pw2.classList.remove('is-error'); }
+  });
+
+  /* ── Save → fetch ── */
+  document.getElementById('save-lecturer-btn').addEventListener('click', function() {
+    var firstEl  = document.getElementById('lec-first');
+    var emailEl  = document.getElementById('lec-email');
+    var deptEl   = document.getElementById('lec-department');
+    var courseEl = document.getElementById('course-name');
+    var saveBtn  = document.getElementById('save-lecturer-btn');
+    var errEl    = document.getElementById('modal-error');
+
+    if (!firstEl.value.trim())   { shake(firstEl);  return; }
+    if (!emailEl.value.trim())   { shake(emailEl);  return; }
+    if (!deptEl.value.trim())    { shake(deptEl);   return; }
+    if (pw1.value.length < 8)    { shake(pw1);      return; }
+    if (pw1.value !== pw2.value) { shake(pw2); pwHint.style.display='block'; return; }
+    if (!courseEl.value.trim())  { shake(courseEl); return; }
+
+    var payload = {
+      first_name:  getVal('lec-first'),
+      last_name:   getVal('lec-last'),
+      email:       getVal('lec-email'),
+      password:    pw1.value,
+      department:  getVal('lec-department'),
+      course_name: getVal('course-name'),
+      start_date:  getVal('course-start'),
+      end_date:    getVal('course-end'),
+      course_year: getVal('course-year'),
+      degree_type: getVal('course-degree')
+    };
+
+    saveBtn.disabled = true;
+    setSaving(true);
+    errEl.style.display = 'none';
+
+    fetch('/api/admin/create-lecturer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
+    .then(function(res) {
+      setSaving(false);
+      saveBtn.disabled = false;
+      if (!res.ok) {
+        errEl.textContent = res.data.error || 'Something went wrong.';
+        errEl.style.display = 'block';
+        return;
+      }
+      var lecturer = res.data.lecturer || payload;
+      var course   = res.data.course   || payload;
+      records.push({
+        lecturer_id: lecturer.lecturer_id,
+        first_name:  payload.first_name,
+        last_name:   payload.last_name,
+        email:       payload.email,
+        department:  payload.department,
+        course_name: payload.course_name,
+        degree_type: payload.degree_type,
+        course_year: payload.course_year
+      });
+      render();
+      closeAll();
+    })
+    .catch(function() {
+      setSaving(false);
+      saveBtn.disabled = false;
+      errEl.textContent = 'Network error. Please try again.';
+      errEl.style.display = 'block';
+    });
+  });
+
+  render();
+})();
+</script>
+{% endblock %}
