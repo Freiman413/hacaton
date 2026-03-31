@@ -1,1 +1,2 @@
-chatbot-frontend/* linguist-detectable=false
+templates/dashboard.html linguist-detectable=false
+templates/lecturer_dashboard.html linguist-detectable=false
